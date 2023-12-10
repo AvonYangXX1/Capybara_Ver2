@@ -3,7 +3,7 @@ title: "skeleton of 715 project"
 output: html_document
 date: "2023-12-09"
 ---
-
+Author: Avon Yang, Nuoya Jiang
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
