@@ -94,6 +94,21 @@ variable selection
 assumption check
 report key statistics
 ```{r}
+data$y <- ifelse(data$BMXBMI <= 24.9, 0, 1)
+set.seed(715)
+split_index <- sample(1:nrow(data), 0.8 * nrow(data))
+X_train <- data[split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2", "LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
+y_train <- data[split_index, "y"]
+
+X_test <- data[-split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2", "LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
+y_test <- data[-split_index, "y"]
+```
+
+
+```{r}
+library(tree)
+tree_model <- tree(y_train ~ ., data = X_train)
+predictions <- predict(tree_model, newdata = X_test)
 
 ```
 
@@ -103,7 +118,22 @@ Choose, calculate, and appropriately interpret a metric
 Justify the metric you chose based on the goal of your model
 Include 1+ plot that you use to evaluate model fit
 ```{r}
+library(caret)
+binary_predictions <- as.numeric(ifelse(predictions >= 0.5, 1, 0))
+confusion_matrix <- confusionMatrix(factor(binary_predictions), factor(y_test))
+print(confusion_matrix)
+print(confusion_matrix)
+accuracy <- confusion_matrix$overall["Accuracy"]
+print(paste("Accuracy:", accuracy))
+library(pROC)
 
+# Create ROC curve and calculate AUC
+roc_curve <- roc(y_test, as.numeric(predictions))
+auc_value <- auc(roc_curve)
+print(paste("AUC:", auc_value))
+
+# Plot ROC curve
+plot(roc_curve, main = "ROC Curve", col = "lightblue", lwd = 2)
 ```
 
 Rubric 7:
