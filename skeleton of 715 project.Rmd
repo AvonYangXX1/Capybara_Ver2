@@ -77,8 +77,14 @@ Choose the appropriate test (t test, ANOVA, Wilcox rank-sum,
 Wilcoxon signed-rank, Kruskal-Wallis, binomial test, proportion test,
 chi-square test, Fisher exact test)
 Check any assumptions required and justify your choice of test
+Null hypothesis
 ```{r}
-
+male_data <- data[data$RIAGENDR == 1, "BMXBMI"]
+female_data <- data[data$RIAGENDR == 2, "BMXBMI"]
+variance_test_result <- var.test(male_data, female_data)
+print(variance_test_result$p.value)
+t_test_result <- t.test(male_data, female_data)
+print(t_test_result)
 ```
 
 Rubric 4-5:
