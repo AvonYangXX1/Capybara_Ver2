@@ -184,7 +184,29 @@ can change the variables in any way that you think would be
 interesting: e.g., add/remove variables, different regularization or
 scaling. Justify the alternative model that you choose.
 ```{r}
+X_train_d <- data[split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2")]
 
+X_test_d <- data[-split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2")]
+
+tree_model_d <- tree(y_train ~ ., data = X_train_d)
+predictions_d <- predict(tree_model_d, newdata = X_train_d)
+
+binary_predictions_d <- as.numeric(ifelse(predictions_d >= 0.5, 1, 0))
+confusion_matrix_d <- confusionMatrix(factor(binary_predictions_d), factor(y_train))
+accuracy_d <- confusion_matrix_d$overall["Accuracy"]
+print(paste("Demographic Accuracy:", accuracy_d))
+
+X_train_l <- data[split_index, c("LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
+
+X_test_l <- data[-split_index, c("LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
+
+tree_model_l <- tree(y_train ~ ., data = X_train_l)
+predictions_l <- predict(tree_model_l, newdata = X_train_l)
+
+binary_predictions_l <- as.numeric(ifelse(predictions_l >= 0.5, 1, 0))
+confusion_matrix_l <- confusionMatrix(factor(binary_predictions_l), factor(y_train))
+accuracy_l <- confusion_matrix_l$overall["Accuracy"]
+print(paste("Blood Lab Test Accuracy:", accuracy_l))
 ```
 
 Rubric 8:
