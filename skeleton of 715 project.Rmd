@@ -28,9 +28,24 @@ Literature research and motivation:
 
 Rubric 2: EDA and QC of data
 ```{r}
+subset_df <- read.csv("nhanes_13_14_subset.csv")
+#age, gender, income, oral glucose test, cholesterol, protein, serum glucose, blood sodium, bmi
+data <- subset_df[, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXGLT", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI","BMXBMI")]
 # TO DO: inspect if we have NA values
+any_na <- any(is.na(data))
+print(paste("Are there any NA values in the data frame? ", any_na))
 # TO DO: inspect num/cat, if num, what scale?
-# TO DO: drop NA/impute NA
+str(data)
+# Summary statistics for numeric columns
+summary(data)
+
+# TO DO: drop NA
+data <- na.omit(data)
+
+library(tidyr)
+data <- na.omit(data)
+str(data)
+summary(data)
 ```
 
 
@@ -41,12 +56,13 @@ Rubric 2: EDA and QC of data
 
 ```{r}
 # TO DO: correlation and collinearity
+
 ```
 
 
 ```{r}
 # TO DO: scaling
-# TO DO: encode cat var
+
 ```
 
 Rubric 3: 
