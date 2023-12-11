@@ -19,7 +19,7 @@ Statement of the research question:
 1 dependent variable:
 
 8 independent variable:
-
+　 
 Goal:
 
 Rubric 1.5:
@@ -29,7 +29,7 @@ Literature research and motivation:
 Rubric 2: EDA and QC of data
 ```{r}
 subset_df <- read.csv("nhanes_13_14_subset.csv")
-#age, gender, income, oral glucose test, cholesterol, protein, serum glucose, blood sodium, bmi
+#age, gender, income, potassium, cholesterol, protein, serum glucose, blood sodium, bmi
 data <- subset_df[, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI","BMXBMI")]
 # TO DO: inspect if we have NA values
 any_na <- any(is.na(data))
@@ -51,8 +51,51 @@ summary(data)
 
 ```{r}
 # TO DO: EDA plots
+library(ggplot2)
+install.packages("gridExtra")
+library(gridExtra)
+
+plots_list <- list()
+
+numeric_vars <- names(data)[sapply(data, is.numeric) & names(data) != "BMXBMI"]
+for (var in numeric_vars) {
+    p <- ggplot(data, aes_string(x = var, y = "BMXBMI")) + 
+        geom_point() +
+        labs(x = var, y = "BMI") +
+        theme_minimal()
+    plots_list[[var]] <- p
+}
+
+do.call(grid.arrange, c(plots_list, ncol = 2))
+
 ```
 
+```{r}
+library(dplyr)
+data_overweight <- data %>% 
+  filter(BMXBMI >= 24.9) %>% 
+  mutate(BMI_Category = "BMI >= 24.9")
+data_normal <- data %>% 
+  filter(BMXBMI < 24.9) %>% 
+  mutate(BMI_Category = "BMI < 24.9")
+combined_data <- rbind(data_overweight, data_normal)
+create_combined_histograms <- function(dataset) {
+  plots_list <- list()
+  numeric_vars <- names(dataset)[sapply(dataset, is.numeric) & names(dataset) != "BMXBMI"]
+  for (var in numeric_vars) {
+    p <- ggplot(dataset, aes_string(x = var, fill = "BMI_Category")) + 
+      geom_histogram(position = "identity", alpha = 0.5, bins = 30) +
+      scale_fill_manual(values = c("skyblue", "pink")) +
+      labs(x = var, y = "Frequency", title = paste("Histogram of", var)) +
+      theme_minimal()+
+      theme(plot.title = element_text(size = 10)) 
+    plots_list[[var]] <- p
+  }
+  return(plots_list)
+}
+combined_histograms <- create_combined_histograms(combined_data)
+do.call(grid.arrange, c(combined_histograms, ncol = 2))
+```
 
 ```{r}
 # TO DO: correlation and collinearity
