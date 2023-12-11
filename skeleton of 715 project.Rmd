@@ -30,7 +30,7 @@ Rubric 2: EDA and QC of data
 ```{r}
 subset_df <- read.csv("nhanes_13_14_subset.csv")
 #age, gender, income, oral glucose test, cholesterol, protein, serum glucose, blood sodium, bmi
-data <- subset_df[, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXGLT", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI","BMXBMI")]
+data <- subset_df[, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI","BMXBMI")]
 # TO DO: inspect if we have NA values
 any_na <- any(is.na(data))
 print(paste("Are there any NA values in the data frame? ", any_na))
@@ -56,13 +56,16 @@ summary(data)
 
 ```{r}
 # TO DO: correlation and collinearity
-
+correlation_matrix <- cor(data[, -ncol(data)])
+library(corrplot)
+corrplot(correlation_matrix, method = "color")
 ```
 
 
 ```{r}
 # TO DO: scaling
-
+data_numeric <- as.data.frame(lapply(data, as.numeric))
+data_scaled <- as.data.frame(scale(data_numeric))
 ```
 
 Rubric 3: 
