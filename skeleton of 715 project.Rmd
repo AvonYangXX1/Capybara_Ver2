@@ -52,7 +52,7 @@ summary(data)
 ```{r}
 # TO DO: EDA plots
 library(ggplot2)
-install.packages("gridExtra")
+#install.packages("gridExtra")
 library(gridExtra)
 
 plots_list <- list()
@@ -233,7 +233,10 @@ plot(roc_curve, main = "ROC Curve", col = "lightblue", lwd = 2)
 
 
 ```{r}
-tree_model_gini <- tree(y_train ~ RIDAGEYR + RIAGENDR + LBXSCH + LBXSTP + LBXSGL + LBXSNASI, data = X_train)
+X_train <- data[split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
+
+X_test <- data[-split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
+tree_model_gini <- tree(y_train ~ ., data = X_train, split = "gini")
 predictions_g <- predict(tree_model_gini, newdata = X_train)
 
 binary_predictions_g <- as.numeric(ifelse(predictions_g >= 0.5, 1, 0))
