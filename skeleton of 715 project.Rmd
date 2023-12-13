@@ -100,7 +100,7 @@ do.call(grid.arrange, c(combined_histograms, ncol = 2))
 
 ```{r}
 # TO DO: correlation and collinearity
-correlation_matrix <- cor(data[, -ncol(data)])
+correlation_matrix <- cor(data[, -ncol(data)], method="spearman")
 library(corrplot)
 corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "upper", order = "hclust", tl.col="black", tl.srt=45)
 ```
