@@ -244,12 +244,19 @@ confusion_matrix_g <- confusionMatrix(factor(binary_predictions_g), factor(y_tra
 accuracy_g <- confusion_matrix_g$overall["Accuracy"]
 print(paste("Train Accuracy:", accuracy_g))
 
+roc_curve <- roc(y_train, as.numeric(predictions_g))
+auc_value <- auc(roc_curve)
+print(paste("AUC:", auc_value))
+
 predictions_g <- predict(tree_model_gini, newdata = X_test)
 binary_predictions_g <- as.numeric(ifelse(predictions_g >= 0.5, 1, 0))
 confusion_matrix_g <- confusionMatrix(factor(binary_predictions_g), factor(y_test))
 accuracy_g <- confusion_matrix_g$overall["Accuracy"]
 print(paste("Test Accuracy:", accuracy_g))
 
+roc_curve <- roc(y_test, as.numeric(predictions_g))
+auc_value <- auc(roc_curve)
+print(paste("AUC:", auc_value))
 ```
 
 
