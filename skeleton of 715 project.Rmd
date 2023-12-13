@@ -29,6 +29,7 @@ Literature research and motivation:
 Rubric 2: EDA and QC of data
 ```{r}
 subset_df <- read.csv("nhanes_13_14_subset.csv")
+
 #age, gender, income, potassium, cholesterol, protein, serum glucose, blood sodium, bmi
 data <- subset_df[, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI","BMXBMI")]
 # TO DO: inspect if we have NA values
@@ -101,7 +102,7 @@ do.call(grid.arrange, c(combined_histograms, ncol = 2))
 # TO DO: correlation and collinearity
 correlation_matrix <- cor(data[, -ncol(data)])
 library(corrplot)
-corrplot(correlation_matrix, method = "color")
+corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "upper", order = "hclust", tl.col="black", tl.srt=45)
 ```
 
 
