@@ -108,8 +108,14 @@ corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "up
 
 ```{r}
 # TO DO: scaling
-data_numeric <- as.data.frame(lapply(data, as.numeric))
-data_scaled <- as.data.frame(scale(data_numeric))
+features <- data[setdiff(names(data), 'BMXBMI')]
+target_variable <- data['BMXBMI']
+
+features_numeric <- as.data.frame(lapply(features, function(x) if(is.factor(x)) as.numeric(as.character(x)) else x))
+features_scaled <- scale(features_numeric)
+data_scaled <- cbind(features_scaled, target_variable)
+
+
 ```
 
 Rubric 3: 
@@ -156,8 +162,6 @@ y_test <- data[-split_index, "y"]
 ```{r}
 library(tree)
 tree_model <- tree(y_train ~ ., data = X_train)
-
-
 ```
 
 Rubric 6: 
