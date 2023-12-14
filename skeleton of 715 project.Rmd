@@ -10,21 +10,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## R Markdown
 
-All text in human-readable format except comments should go into the report in the end.
-
-#TO DO
 Rubric 1: 
 Statement of the research question:
-
+Can we use predictor variables to achieve a high level of accuracy in identifying overweight individuals
 1 dependent variable:
+BMI, here we denote a y variable to represent overweight status based on bmi. (with a bmi > 24.5, we denote y as 1)
 
 8 independent variable:
-　 
+"RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI","BMXBMI"
+Demographic: age, gender, income, Lab tests: blood potassium, cholesterol,protein, glucose, and sodium
 Goal:
-
-Rubric 1.5:
-
-Literature research and motivation:
+Classification of overweight individuals from non-overweight individuals
 
 Rubric 2: EDA and QC of data
 ```{r}
@@ -32,10 +28,10 @@ subset_df <- read.csv("nhanes_13_14_subset.csv")
 
 #age, gender, income, potassium, cholesterol, protein, serum glucose, blood sodium, bmi
 data <- subset_df[, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI","BMXBMI")]
-# TO DO: inspect if we have NA values
+#inspect if we have NA values
 any_na <- any(is.na(data))
 print(paste("Are there any NA values in the data frame? ", any_na))
-# TO DO: inspect num/cat, if num, what scale?
+#inspect num/cat.
 str(data)
 # Summary statistics for numeric columns
 summary(data)
@@ -54,15 +50,15 @@ print(paste("Number of variables in the data frame: ", num_variables))
 data_counts <- sapply(data, function(x) sum(!is.na(x)))
 print(data_counts)
 ```
-
+In the data cleaning process, we found our data contained many NA values, and to ensure the cleanness of data, we removed all records with NA values. Here we assume a "missingness completely at random."
 ```{r}
-# TO DO: EDA plots
+# EDA plots
 library(ggplot2)
 #install.packages("gridExtra")
 library(gridExtra)
 
 plots_list <- list()
-
+# dot plot to gain insight and data trend from each independent variable and the original BMI dependent variable
 numeric_vars <- names(data)[sapply(data, is.numeric) & names(data) != "BMXBMI"]
 for (var in numeric_vars) {
     p <- ggplot(data, aes_string(x = var, y = "BMXBMI")) + 
@@ -77,6 +73,7 @@ do.call(grid.arrange, c(plots_list, ncol = 2))
 ```
 
 ```{r}
+# Histograms to inspect distribution of indenependent variables from overweight and non-overweight individuals
 library(dplyr)
 data_overweight <- data %>% 
   filter(BMXBMI >= 24.9) %>% 
@@ -104,7 +101,8 @@ do.call(grid.arrange, c(combined_histograms, ncol = 2))
 ```
 
 ```{r}
-# TO DO: correlation and collinearity
+# correlation and collinearity (Spearman)
+# To ensure there is no siginificant correlation between independent variables
 correlation_matrix <- cor(data[, -ncol(data)], method="spearman")
 library(corrplot)
 corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "upper", order = "hclust", tl.col="black", tl.srt=45)
@@ -112,7 +110,7 @@ corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "up
 
 
 ```{r}
-# TO DO: scaling
+# scaling
 features <- data[setdiff(names(data), 'BMXBMI')]
 target_variable <- data['BMXBMI']
 features_numeric <- as.data.frame(lapply(features, function(x) if(is.factor(x)) as.numeric(as.character(x)) else x))
@@ -121,15 +119,20 @@ data_scaled <- cbind(features_scaled, target_variable)
 ```
 
 Rubric 3: 
-Conduct a two- or multi-sample hypothesis test
-Identify two variables that you want to test for associations, where
-at least one is categorical. Choose variables relevant to your
-research question
-Choose the appropriate test (t test, ANOVA, Wilcox rank-sum,
-Wilcoxon signed-rank, Kruskal-Wallis, binomial test, proportion test,
-chi-square test, Fisher exact test)
-Check any assumptions required and justify your choice of test
-Null hypothesis
+
+Hypothesis test
+
+Null hypothesis: there is no significant difference in mean BMI between the two genders.
+Alternative hypothesis: there is a significant difference in mean BMI between the two genders.
+
+t-test: 
+assumptions: We do believe the sampling is random, and our sample is normal distributed
+
+F-test:
+P value of our F test is 8.21755e-28 which is significantly smaller than 0.05, so we reject the null hypothesis that the male and female have equal variances in bmi.
+
+The t test p value is 8.745e-09 and is smaller than 0.05, so we reject the null hypothesis that there is no significant difference in mean BMI between the two genders.
+
 ```{r}
 male_data <- data[data$RIAGENDR == 1, "BMXBMI"]
 female_data <- data[data$RIAGENDR == 2, "BMXBMI"]
@@ -140,18 +143,16 @@ print(t_test_result)
 ```
 
 Rubric 4-5:
-Choose a regression or classification model and run the model
-justify decision
-variable selection
-assumption check
-report key statistics
+We chose decision tree as our model. Since there is no strong linear correlation between our dependent and independent variables, we select a non-parametric model: tree.
+We discard income and potassium because of their minimal correlation coefficients (<0.1) with outcome variables.
 ```{r}
+# add the y label (overweight status) to our dataset
 data$y <- ifelse(data$BMXBMI <= 24.9, 0, 1)
 set.seed(715)
-
+#inspect correlation to make sure no collinearity and select variables based on correlation
 cor_matrix<- cor(data)
 print(cor_matrix)
-
+#split data into train test split
 split_index <- sample(1:nrow(data), 0.8 * nrow(data))
 X_train <- data[split_index, c("RIDAGEYR", "RIAGENDR", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
 y_train <- data[split_index, "y"]
@@ -167,21 +168,19 @@ tree_model <- tree(y_train ~ ., data = X_train)
 ```
 
 Rubric 6: 
-Evaluate model fit
-Choose, calculate, and appropriately interpret a metric
-Justify the metric you chose based on the goal of your model
-Include 1+ plot that you use to evaluate model fit
+Evaluate model fit on our training dataset
+To better cater to the goal of our model-correctly classify individuals, we chose to display our ROC curve, which shows all thresholds of our decision tree. 
 ```{r}
 library(caret)
 library(pROC)
 predictions <- predict(tree_model, newdata = X_train)
-
+# calculate raw accuracy as a refenrence
 binary_predictions <- as.numeric(ifelse(predictions >= 0.5, 1, 0))
 confusion_matrix <- confusionMatrix(factor(binary_predictions), factor(y_train))
 print(confusion_matrix)
 accuracy <- confusion_matrix$overall["Accuracy"]
 print(paste("Accuracy:", accuracy))
-
+# draw roc curves and calculate auc
 roc_curve <- roc(y_train, as.numeric(predictions))
 auc_value <- auc(roc_curve)
 print(paste("AUC:", auc_value))
@@ -189,10 +188,7 @@ plot(roc_curve, main = "ROC Curve", col = "lightblue", lwd = 2)
 ```
 
 Rubric 7:
-Compare your model to one with different variables
-can change the variables in any way that you think would be
-interesting: e.g., add/remove variables, different regularization or
-scaling. Justify the alternative model that you choose.
+To make another interesting model, we only select the demographic variables from our data set and test their accuracies for our train and test datasets. We are surprised to see that using only the demographic variables, we achieve a similar accuracy compared to the original model. This experiment shows the importance of demographic variables in another angle.
 ```{r}
 X_train_d <- data[split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2")]
 
@@ -206,21 +202,11 @@ confusion_matrix_d <- confusionMatrix(factor(binary_predictions_d), factor(y_tra
 accuracy_d <- confusion_matrix_d$overall["Accuracy"]
 print(paste("Demographic Accuracy:", accuracy_d))
 
-X_train_l <- data[split_index, c("LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
-
-X_test_l <- data[-split_index, c("LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
-
-tree_model_l <- tree(y_train ~ ., data = X_train_l)
-predictions_l <- predict(tree_model_l, newdata = X_train_l)
-
-binary_predictions_l <- as.numeric(ifelse(predictions_l >= 0.5, 1, 0))
-confusion_matrix_l <- confusionMatrix(factor(binary_predictions_l), factor(y_train))
-accuracy_l <- confusion_matrix_l$overall["Accuracy"]
-print(paste("Blood Lab Test Accuracy:", accuracy_l))
 ```
 
 Rubric 8:
 Conduct one follow-up analysis
+Part 1: we test our accuracy, roc, and AUC on our test dataset and we observe no overfit in this case.
 ```{r}
 predictions <- predict(tree_model, newdata = X_test)
 
@@ -236,11 +222,15 @@ print(paste("AUC:", auc_value))
 plot(roc_curve, main = "ROC Curve", col = "lightblue", lwd = 2)
 ```
 
-
+Part 2: we test our accuracy, roc, and AUC on a modified tree on our train and test datasets and we observe overfit in this case.
+We add all variables and change the split criteria from the defalt deviance to gini index. The train score increases dramatically while the test score decreases slightly. The new model might not be generalized to new data with a low AUC and a low accuracy.
 ```{r}
+# add all variables to the train test sets
 X_train <- data[split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
 
 X_test <- data[-split_index, c("RIDAGEYR", "RIAGENDR", "INDFMIN2","LBXSKSI", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
+
+# A tree with gini as classification critera
 tree_model_gini <- tree(y_train ~ ., data = X_train, split = "gini")
 predictions_g <- predict(tree_model_gini, newdata = X_train)
 
@@ -251,7 +241,7 @@ print(paste("Train Accuracy:", accuracy_g))
 
 roc_curve <- roc(y_train, as.numeric(predictions_g))
 auc_value <- auc(roc_curve)
-print(paste("AUC:", auc_value))
+print(paste("Train AUC:", auc_value))
 
 predictions_g <- predict(tree_model_gini, newdata = X_test)
 binary_predictions_g <- as.numeric(ifelse(predictions_g >= 0.5, 1, 0))
@@ -261,7 +251,7 @@ print(paste("Test Accuracy:", accuracy_g))
 
 roc_curve <- roc(y_test, as.numeric(predictions_g))
 auc_value <- auc(roc_curve)
-print(paste("AUC:", auc_value))
+print(paste("Test AUC:", auc_value))
 ```
 
 
