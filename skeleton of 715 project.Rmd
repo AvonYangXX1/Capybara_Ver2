@@ -82,12 +82,13 @@ data_normal <- data %>%
   filter(BMXBMI < 24.9) %>% 
   mutate(BMI_Category = "BMI < 24.9")
 combined_data <- rbind(data_overweight, data_normal)
-create_combined_histograms <- function(dataset) {
+
+generate_histograms <- function(data) {
   plots_list <- list()
-  numeric_vars <- names(dataset)[sapply(dataset, is.numeric) & names(dataset) != "BMXBMI"]
-  for (var in numeric_vars) {
-    p <- ggplot(dataset, aes_string(x = var, fill = "BMI_Category")) + 
-      geom_histogram(position = "identity", alpha = 0.5, bins = 30) +
+  vars <- names(data)[sapply(data, is.numeric)&names(data) != "BMXBMI"]
+  for (var in vars) {
+    p <- ggplot(data, aes_string(x = var, fill = "BMI_Category")) + 
+      geom_histogram( alpha = 0.5, bins = 30) +
       scale_fill_manual(values = c("skyblue", "pink")) +
       labs(x = var, y = "Frequency", title = paste("Histogram of", var)) +
       theme_minimal()+
@@ -96,13 +97,13 @@ create_combined_histograms <- function(dataset) {
   }
   return(plots_list)
 }
-combined_histograms <- create_combined_histograms(combined_data)
+combined_histograms <- generate_histograms(combined_data)
 do.call(grid.arrange, c(combined_histograms, ncol = 2))
 ```
 
 ```{r}
 # correlation and collinearity (Spearman)
-# To ensure there is no siginificant correlation between independent variables
+# To ensure there is no significant correlation between independent variables
 correlation_matrix <- cor(data[, -ncol(data)], method="spearman")
 library(corrplot)
 corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "upper", order = "hclust", tl.col="black", tl.srt=45)
@@ -110,7 +111,7 @@ corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "up
 
 
 ```{r}
-# scaling
+# scaling the predictor variables 
 features <- data[setdiff(names(data), 'BMXBMI')]
 target_variable <- data['BMXBMI']
 features_numeric <- as.data.frame(lapply(features, function(x) if(is.factor(x)) as.numeric(as.character(x)) else x))
@@ -154,6 +155,9 @@ cor_matrix<- cor(data)
 print(cor_matrix)
 #split data into train test split
 split_index <- sample(1:nrow(data), 0.8 * nrow(data))
+
+#Variable selection by not selecting INDFMIN2, LBXSKSI
+
 X_train <- data[split_index, c("RIDAGEYR", "RIAGENDR", "LBXSCH", "LBXSTP", "LBXSGL", "LBXSNASI")]
 y_train <- data[split_index, "y"]
 
