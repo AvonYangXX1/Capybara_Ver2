@@ -48,7 +48,12 @@ data <- na.omit(data)
 str(data)
 summary(data)
 ```
-
+```{r}
+num_variables <- ncol(data)
+print(paste("Number of variables in the data frame: ", num_variables))
+data_counts <- sapply(data, function(x) sum(!is.na(x)))
+print(data_counts)
+```
 
 ```{r}
 # TO DO: EDA plots
@@ -110,12 +115,9 @@ corrplot(correlation_matrix, method = "color", addCoef.col = "black", type = "up
 # TO DO: scaling
 features <- data[setdiff(names(data), 'BMXBMI')]
 target_variable <- data['BMXBMI']
-
 features_numeric <- as.data.frame(lapply(features, function(x) if(is.factor(x)) as.numeric(as.character(x)) else x))
 features_scaled <- scale(features_numeric)
 data_scaled <- cbind(features_scaled, target_variable)
-
-
 ```
 
 Rubric 3: 
@@ -177,7 +179,6 @@ predictions <- predict(tree_model, newdata = X_train)
 binary_predictions <- as.numeric(ifelse(predictions >= 0.5, 1, 0))
 confusion_matrix <- confusionMatrix(factor(binary_predictions), factor(y_train))
 print(confusion_matrix)
-print(confusion_matrix)
 accuracy <- confusion_matrix$overall["Accuracy"]
 print(paste("Accuracy:", accuracy))
 
@@ -225,7 +226,6 @@ predictions <- predict(tree_model, newdata = X_test)
 
 binary_predictions <- as.numeric(ifelse(predictions >= 0.5, 1, 0))
 confusion_matrix <- confusionMatrix(factor(binary_predictions), factor(y_test))
-print(confusion_matrix)
 print(confusion_matrix)
 accuracy <- confusion_matrix$overall["Accuracy"]
 print(paste("Accuracy:", accuracy))
